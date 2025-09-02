@@ -1,0 +1,26 @@
+# Arquivos de compilação
+*.o
+*.out
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+
+# Diretórios de compilação
+build/
+bin/
+obj/
+
+# Arquivos de depuração
+*.dSYM/
+*.log
+*.dump
+
+# Arquivos específicos de editores e IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
