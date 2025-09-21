@@ -1,11 +1,27 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
+
 #ifndef CRPYT_H
 #define CRPYT_H
 
-typedef char* string;
+#define BLOCK_SIZE      6
+#define MAX_KEY_SIZE    (BLOCK_SIZE * BLOCK_SIZE)
+#define MAX_CIPHER_LEN  (BLOCK_SIZE * BLOCK_SIZE)
 
-string generate_random_key();
+typedef struct {
+    char character;
+    unsigned int original_index;
+} KeyPair;
 
-string transposition_cipher   (string originalText, string key);
-string transposition_decipher (string cryptedText,  string key);
+// Algoritmos relacionados a chave de cifra
+char* generate_random_key();
+bool check_invalid_key(char* key);
 
-#endif CRPYT_H
+// Algoritmos de cifra/decifra completos
+char* cipher    (char* originalText, char* key);
+char* decipher  (char* cryptedText,  char* key);
+
+#endif // CRPYT_H
