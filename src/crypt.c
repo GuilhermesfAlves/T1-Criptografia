@@ -163,7 +163,9 @@ char* cipher (char* originalText, char* key) {
     // Repeticoes de transposicao com cada chave
     for (unsigned int i = 0; i < BLOCK_SIZE; i++) {
         transposition_cipher(output_buffer, input_buffer, key, i);
-        // xor_strings(output_buffer, key, MAX_CIPHER_LEN);
+
+        // TODO: A cada iteracao fazer XOR com BLOCK_SIZE translocado da KEY
+        // AB CD EF -> EF AB CD -> [...]
 
         temp = input_buffer;
         input_buffer = output_buffer;
@@ -192,7 +194,6 @@ char* decipher (char* cryptedText, char* key) {
     strcpy(input_buffer, cryptedText);
 
     for (unsigned int i = BLOCK_SIZE; i > 0; i--) {
-        // xor_strings(input_buffer, key, MAX_CIPHER_LEN);
         transposition_decipher(output_buffer, input_buffer, key, i - 1);
 
         temp = input_buffer;
