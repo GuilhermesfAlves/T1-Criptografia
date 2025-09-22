@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include <time.h>
+#include <time.h>
 
 #include "crypt.h"
 
 int main(int argv, char* argc[]) {
-    srand(0);
+    srand(time(NULL));
 
     char textoOriginal[] = "criptografia eh massa, muito massa mesmo, acredite!";
     char *chaveCriptografia = generate_random_key();
