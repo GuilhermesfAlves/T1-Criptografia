@@ -16,12 +16,10 @@ typedef struct {
     unsigned int original_index;
 } KeyPair;
 
-// Algoritmos relacionados a chave de cifra
-char* generate_random_key();
-bool check_invalid_key(char* key);
+char* generate_random_key();        // Gera uam chave de tamanho MAX_KEY_SIZE
+bool check_invalid_key(char* key);  // Verifica validade (TRUE para erro)
 
-// Algoritmos de cifra/decifra completos
-char* cipher    (char* originalText, char* key);
-char* decipher  (char* cryptedText,  char* key);
+char* cipher    (char* originalText, char* key);    // Retorno: string cifrada
+char* decipher  (char* cryptedText,  char* key);    // Retorno: string decifrada
 
 #endif // CRPYT_H

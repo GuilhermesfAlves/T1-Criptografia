@@ -1,5 +1,17 @@
 #include "crypt.h"
 
+// Headers de ordenacao
+int compare_pairs(const void* a, const void* b);
+unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned int end);
+
+// Headers de formatacao de strings
+char* fix_string (char* string, unsigned int size);
+char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration);
+
+// Cifra de transposicao
+char* transposition_cipher (char* cryptedText, char* originalText, char* key, unsigned int iteration);
+char* transposition_decipher (char* decryptedText, char* originalText, char* key, unsigned int iteration);
+
 char* generate_random_key () {
     char* newKey = malloc((MAX_KEY_SIZE + 1) * sizeof(char));
     if(!newKey) {
@@ -16,6 +28,8 @@ char* generate_random_key () {
 }
 
 bool check_invalid_key (char* key) {
+    if (strlen(key) != MAX_KEY_SIZE) return true;
+
     for(unsigned int i = 0; key[i] != '\0'; i++)
         if ((key[i] < 'A') || (key[i] > 'Z'))
             return true;
@@ -54,8 +68,8 @@ unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned i
         return NULL;
     }
 
-    const unsigned int length = end - start;
-    const unsigned int keyLength = strlen(key);
+    const unsigned int length = end - start,
+                       keyLength = strlen(key);
 
     KeyPair* pairs = malloc(length * sizeof(KeyPair));
     unsigned int* result_indices = malloc(length * sizeof(unsigned int));
@@ -90,8 +104,9 @@ char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration) 
 }
 
 char* transposition_cipher (char* cryptedText, char* originalText, char* key, unsigned int iteration) {
-    unsigned int transpositionIndex, index = 0;
-    unsigned int *columnSequence = columns_sequence_by_key(key, BLOCK_SIZE * iteration, (BLOCK_SIZE * (iteration + 1)));
+    unsigned int transpositionIndex,
+                 index = 0,
+                 *columnSequence = columns_sequence_by_key(key, BLOCK_SIZE * iteration, (BLOCK_SIZE * (iteration + 1)));
 
     if (!columnSequence) {
         printf("ERRO: não foi possível alocar memória para a coluna de transposicao");
@@ -141,9 +156,9 @@ char* transposition_decipher (char* decryptedText, char* originalText, char* key
 }
 
 char* cipher (char* originalText, char* key) {
-    char* input_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char));
-    char* output_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char));
-    char* temp;
+    char *input_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char)),
+         *output_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char)),
+         *temp;
 
     if (!output_buffer || !input_buffer) {
         printf("ERRO: não foi possível alocar memória para o texto criptografado");
@@ -152,7 +167,9 @@ char* cipher (char* originalText, char* key) {
         return NULL;
     }
 
-    strcpy(input_buffer, fix_string(originalText, MAX_CIPHER_LEN));
+    strncpy(input_buffer, originalText, MAX_CIPHER_LEN);
+    input_buffer[MAX_CIPHER_LEN] = '\0';
+    fix_string(input_buffer, MAX_CIPHER_LEN);
 
     // Repeticoes de transposicao com cada chave
     for (unsigned int i = 0; i < BLOCK_SIZE; i++) {
@@ -164,7 +181,8 @@ char* cipher (char* originalText, char* key) {
         output_buffer = temp;
     }
 
-    strcpy(output_buffer, input_buffer);
+    memcpy(output_buffer, input_buffer, MAX_CIPHER_LEN);
+    output_buffer[MAX_CIPHER_LEN] = '\0';
 
     free(input_buffer);
 
@@ -187,7 +205,6 @@ char* decipher (char* cryptedText, char* key) {
     input_buffer[MAX_CIPHER_LEN] = '\0';
 
     for (unsigned int i = BLOCK_SIZE; i > 0; i--) {
-        // xor_string_inverse(input_buffer, key, MAX_CIPHER_LEN, i - 1);
         xor_strings (input_buffer, key, MAX_CIPHER_LEN, i - 1);
         transposition_decipher(output_buffer, input_buffer, key, i - 1);
 
@@ -196,7 +213,8 @@ char* decipher (char* cryptedText, char* key) {
         output_buffer = temp;
     }
 
-    strcpy(output_buffer, input_buffer);
+    memcpy(output_buffer, input_buffer, MAX_CIPHER_LEN);
+    output_buffer[MAX_CIPHER_LEN] = '\0';
 
     free(input_buffer);
 
