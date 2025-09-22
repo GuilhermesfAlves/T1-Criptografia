@@ -41,10 +41,6 @@ char* fix_string (char* string, unsigned int size) {
     for (unsigned int i = 0; i < size; i++) {
         // Letras em maisculo
         string[i] = toupper(string[i]);
-
-        // Substituir espaços
-        if (string[i] == ' ')
-            string[i] = 'x';
     }
 
     return string;
