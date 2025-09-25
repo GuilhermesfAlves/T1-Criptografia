@@ -17,7 +17,7 @@ int main(int argv, char* argc[]) {
     char textoOriginal[] = "criptografia eh massa, muito massa mesmo, acredite!";
     char *chaveCriptografia = generate_random_key();
 
-    if (check_invalid_key(chaveCriptografia)) {
+    if (!is_key_valid(chaveCriptografia)) {
         if (chaveCriptografia)
             free(chaveCriptografia);
 
@@ -29,8 +29,8 @@ int main(int argv, char* argc[]) {
     char *textoCriptografado = cipher(textoOriginal, chaveCriptografia);
     char *textoDescriptografado = decipher(textoCriptografado, chaveCriptografia);
 
-    printf("Chave: %s\n\n", chaveCriptografia);
-    printf("Original:\t\t\t%s\n", textoOriginal);
+    printf("Chave:\t\t\t%s\n", chaveCriptografia);
+    printf("Original:\t\t%s\n", textoOriginal);
     printf("Criptografado:\t\t%s\n", textoCriptografado);
     printf("Descriptografado:\t%s\n", textoDescriptografado);
 

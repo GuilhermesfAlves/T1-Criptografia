@@ -1,71 +1,67 @@
-#include "crypt.h"
+#include "../include/crypt.h"
 
 // Headers de ordenacao
 int compare_pairs(const void* a, const void* b);
 unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned int end);
 
 // Headers de formatacao de strings
-char* fix_string (char* string, unsigned int size);
 char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration);
+
+// Cifra de Substituição
+char* substitution_cipher(char* input, char* key, unsigned int size);
+char* substitution_decipher(char* input, char* key, unsigned int size);
 
 // Cifra de transposicao
 char* transposition_cipher (char* cryptedText, char* originalText, char* key, unsigned int iteration);
 char* transposition_decipher (char* decryptedText, char* originalText, char* key, unsigned int iteration);
 
 char* generate_random_key () {
-    char* newKey = malloc((MAX_KEY_SIZE + 1) * sizeof(char));
-    if(!newKey) {
+    char* newKey = malloc((KEY_LEN) * sizeof(char));
+
+    if (!newKey) {
         printf("ERRO: não foi possível alocar memória para a NOVA CHAVE");
         exit(1);
     }
 
-    for(unsigned int i = 0; i < MAX_KEY_SIZE; i++)
-        newKey[i] = 65 + (rand() % 26);
-
-    newKey[MAX_KEY_SIZE] = '\0';
+    for(unsigned int i = 0; i < KEY_LEN; i++)
+        newKey[i] = MIN_CHAR + (rand() % RANGE_CHAR); // Todos os caracteres da tabela ascii
 
     return newKey;
 }
 
-bool check_invalid_key (char* key) {
-    if (strlen(key) != MAX_KEY_SIZE) return true;
-
-    for(unsigned int i = 0; key[i] != '\0'; i++)
-        if ((key[i] < 'A') || (key[i] > 'Z'))
-            return true;
-
-    return false;
+bool is_printable_char(char i) {
+    return (MIN_CHAR <= i && i <= MAX_CHAR);
 }
 
-char* fix_string (char* string, unsigned int size) {
-    for (unsigned int i = 0; i < size; i++) {
-        // Letras em maisculo
-        string[i] = toupper(string[i]);
-    }
+bool is_key_valid (char* key) {
+    for (unsigned int i = 0; i < KEY_LEN; i++)
+        if (!is_printable_char(key[i]))
+            return false;
 
-    return string;
+    return true;
 }
 
 int compare_pairs(const void* a, const void* b) {
     KeyPair* pairA = (KeyPair*)a;
     KeyPair* pairB = (KeyPair*)b;
 
-    if (pairA->character < pairB->character) return -1;
-    if (pairA->character > pairB->character) return 1;
+    // ordena com base no char
+    if (pairA -> character < pairB -> character) return -1;
+    if (pairA -> character > pairB -> character) return 1;
 
-    if (pairA->original_index < pairB->original_index) return -1;
-    if (pairA->original_index > pairB->original_index) return 1;
+    // caso seja igual, ordena com base no index
+    if (pairA -> original_index < pairB -> original_index) return -1;
+    if (pairA -> original_index > pairB -> original_index) return 1;
 
     return 0;
 }
 
 unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned int end) {
-    if (key == NULL || strlen(key) == 0 || start > end) {
+    if (key == NULL || start > end) {
         return NULL;
     }
 
-    const unsigned int length = end - start,
-                       keyLength = strlen(key);
+    const unsigned int length = end - start;
 
     KeyPair* pairs = malloc(length * sizeof(KeyPair));
     unsigned int* result_indices = malloc(length * sizeof(unsigned int));
@@ -77,7 +73,7 @@ unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned i
     }
 
     for (unsigned int i = 0; i < length; i++) {
-        pairs[i].character = key[(start + i) % keyLength];
+        pairs[i].character = key[(start + i) % KEY_LEN];
         pairs[i].original_index = i;
     }
 
@@ -93,8 +89,12 @@ unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned i
 }
 
 char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration) {
-    for (unsigned int i = 0; i < size; i++)
-        a[i] = a[i] ^ b[((i + (iteration * BLOCK_SIZE)) % size)];
+    for (unsigned int i = 0; i < size; i++){
+        const char x = a[i] ^ b[((i + (iteration * BLOCK_LEN)) % size)];
+        if (is_printable_char(x))
+            a[i] = x;
+        // caso não seja caracter printável mantém
+    }
 
     return a;
 }
@@ -102,7 +102,7 @@ char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration) 
 char* transposition_cipher (char* cryptedText, char* originalText, char* key, unsigned int iteration) {
     unsigned int transpositionIndex,
                  index = 0,
-                 *columnSequence = columns_sequence_by_key(key, BLOCK_SIZE * iteration, (BLOCK_SIZE * (iteration + 1)));
+                 *columnSequence = columns_sequence_by_key(key, BLOCK_LEN * iteration, (BLOCK_LEN * (iteration + 1)));
 
     if (!columnSequence) {
         printf("ERRO: não foi possível alocar memória para a coluna de transposicao");
@@ -110,9 +110,9 @@ char* transposition_cipher (char* cryptedText, char* originalText, char* key, un
     }
 
     // Decifra da transposicao
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            transpositionIndex = (columnSequence[i] + (j * BLOCK_SIZE));
+    for (int i = 0; i < BLOCK_LEN; i++) { // N blocos na string
+        for (int j = 0; j < BLOCK_LEN; j++) { // BLOCK_LEN
+            transpositionIndex = (columnSequence[j] + (i * BLOCK_LEN));
             cryptedText[index] = originalText[transpositionIndex];
             index++;
         }
@@ -128,18 +128,17 @@ char* transposition_cipher (char* cryptedText, char* originalText, char* key, un
 char* transposition_decipher (char* decryptedText, char* originalText, char* key, unsigned int iteration) {
     unsigned int transpositionIndex,
                  index = 0,
-                 *columnSequence = columns_sequence_by_key(key, BLOCK_SIZE * iteration, (BLOCK_SIZE * (iteration + 1)));
+                 *columnSequence = columns_sequence_by_key(key, BLOCK_LEN * iteration, (BLOCK_LEN * (iteration + 1)));
 
     if (!columnSequence) {
         printf("ERRO: não foi possível alocar memória para a coluna de transposicao");
         return NULL;
     }
 
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            transpositionIndex = (columnSequence[i] + (j * BLOCK_SIZE));
+    for (int i = 0; i < BLOCK_LEN; i++) { // N Blocos na string
+        for (int j = 0; j < BLOCK_LEN; j++) { // BLOCK_LEN
+            transpositionIndex = (columnSequence[j] + (i * BLOCK_LEN));
             decryptedText[transpositionIndex] = originalText[index];
-
             index++;
         }
     }
@@ -151,9 +150,43 @@ char* transposition_decipher (char* decryptedText, char* originalText, char* key
     return decryptedText;
 }
 
+char* substitution_cipher(char* input, char* key, unsigned int size) {
+    unsigned int shift = 0;
+    // Gera deslocamento a partir da chave
+    for (unsigned int i = 0; i < KEY_LEN; i++)
+        shift = (shift * 31 + key[i]) % RANGE_CHAR;
+
+    for (unsigned int i = 0; i < size; i++) {
+        const char c = input[i];
+
+        if (is_printable_char(c)) {
+            input[i] = MIN_CHAR + ((c - MIN_CHAR - shift + RANGE_CHAR) % RANGE_CHAR);
+        }
+    }
+
+    return input;
+}
+
+char* substitution_decipher(char* input, char* key, unsigned int size) {
+    unsigned int shift = 0;
+    // Gera deslocamento a partir da chave
+    for (unsigned int i = 0; i < KEY_LEN; i++)
+        shift = (shift * 31 + key[i]) % RANGE_CHAR;
+
+    for (unsigned int i = 0; i < size; i++) {
+        const char c = input[i];
+
+        if (is_printable_char(c)) {
+            input[i] = MIN_CHAR + ((c - MIN_CHAR + shift) % RANGE_CHAR);
+        }
+    }
+
+    return input;
+}
+
 char* cipher (char* originalText, char* key) {
-    char *input_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char)),
-         *output_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char)),
+    char *input_buffer = malloc((STR_CIPHER_LEN + 1) * sizeof(char)),
+         *output_buffer = malloc((STR_CIPHER_LEN + 1) * sizeof(char)),
          *temp;
 
     if (!output_buffer || !input_buffer) {
@@ -163,31 +196,31 @@ char* cipher (char* originalText, char* key) {
         return NULL;
     }
 
-    strncpy(input_buffer, originalText, MAX_CIPHER_LEN);
-    input_buffer[MAX_CIPHER_LEN] = '\0';
-    fix_string(input_buffer, MAX_CIPHER_LEN);
+    strncpy(input_buffer, originalText, STR_CIPHER_LEN);
+    input_buffer[STR_CIPHER_LEN] = '\0';
 
     // Repeticoes de transposicao com cada chave
-    for (unsigned int i = 0; i < BLOCK_SIZE; i++) {
+    for (unsigned int i = 0; i < N_REP_CIPHER; i++) {
         transposition_cipher(output_buffer, input_buffer, key, i);
-        xor_strings (output_buffer, key, MAX_CIPHER_LEN, i);
+        substitution_cipher(output_buffer, key, STR_CIPHER_LEN);
+        xor_strings(output_buffer, key, KEY_LEN, i);
 
         temp = input_buffer;
         input_buffer = output_buffer;
         output_buffer = temp;
     }
 
-    memcpy(output_buffer, input_buffer, MAX_CIPHER_LEN);
-    output_buffer[MAX_CIPHER_LEN] = '\0';
+    memcpy(output_buffer, input_buffer, STR_CIPHER_LEN);
+    output_buffer[STR_CIPHER_LEN] = '\0';
 
     free(input_buffer);
 
     return output_buffer;
 }
 
-char* decipher (char* cryptedText, char* key) {
-    char* input_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char));
-    char* output_buffer = malloc((MAX_CIPHER_LEN + 1) * sizeof(char));
+char* decipher(char* cryptedText, char* key) {
+    char* input_buffer = malloc((STR_CIPHER_LEN + 1) * sizeof(char));
+    char* output_buffer = malloc((STR_CIPHER_LEN + 1) * sizeof(char));
     char* temp;
 
     if (!output_buffer || !input_buffer) {
@@ -197,11 +230,12 @@ char* decipher (char* cryptedText, char* key) {
         return NULL;
     }
 
-    memcpy(input_buffer, cryptedText, MAX_CIPHER_LEN);
-    input_buffer[MAX_CIPHER_LEN] = '\0';
+    memcpy(input_buffer, cryptedText, STR_CIPHER_LEN);
+    input_buffer[STR_CIPHER_LEN] = '\0';
 
-    for (unsigned int i = BLOCK_SIZE; i > 0; i--) {
-        xor_strings (input_buffer, key, MAX_CIPHER_LEN, i - 1);
+    for (unsigned int i = N_REP_CIPHER; i > 0; i--) {
+        xor_strings (input_buffer, key, STR_CIPHER_LEN, i - 1);
+        substitution_decipher(input_buffer, key, STR_CIPHER_LEN);
         transposition_decipher(output_buffer, input_buffer, key, i - 1);
 
         temp = input_buffer;
@@ -209,8 +243,8 @@ char* decipher (char* cryptedText, char* key) {
         output_buffer = temp;
     }
 
-    memcpy(output_buffer, input_buffer, MAX_CIPHER_LEN);
-    output_buffer[MAX_CIPHER_LEN] = '\0';
+    memcpy(output_buffer, input_buffer, STR_CIPHER_LEN);
+    output_buffer[STR_CIPHER_LEN] = '\0';
 
     free(input_buffer);
 
