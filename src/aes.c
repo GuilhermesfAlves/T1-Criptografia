@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../include/manager.h"
 
 void handleErrors(void){
     ERR_print_errors_fp(stderr);
@@ -113,24 +114,23 @@ int main (void){
                         };
 
     /* Message to be encrypted */
-    unsigned char *plaintext =
-        (unsigned char *)"The quick brown fox jumps over the lazy dog";
+    unsigned char *plaintext = (unsigned char *)read_stdin_to_string();
 
+    int text_len = strlen((char *)plaintext);
     /*
      * Buffer for ciphertext. Ensure the buffer is long enough for the
      * ciphertext which may be longer than the plaintext, depending on the
      * algorithm and mode.
      */
-    unsigned char ciphertext[128];
+    unsigned char ciphertext[text_len];
 
     /* Buffer for the decrypted text */
-    unsigned char decryptedtext[128];
+    unsigned char decryptedtext[text_len];
 
     int decryptedtext_len, ciphertext_len;
 
     /* Encrypt the plaintext */
-    ciphertext_len = encrypt (plaintext, strlen ((char *)plaintext), key, iv,
-                              ciphertext);
+    ciphertext_len = encrypt (plaintext, text_len, key, iv, ciphertext);
 
     /* Do something useful with the ciphertext here */
     printf("Ciphertext is:\n");
@@ -147,6 +147,6 @@ int main (void){
     printf("Decrypted text is:\n");
     printf("%s\n", decryptedtext);
 
-
+    free(plaintext);
     return 0;
 }

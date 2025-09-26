@@ -27,9 +27,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -I$(INCDIR) -c $< -o $@
 
-aes: $(SRCDIR)/aes.c
+aes: $(SRCDIR)/aes.c $(SRCDIR)/manager.c
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $(BINDIR)/aes $(OPENSSLFLAGS)
+	$(CC) $(CFLAGS) -I$(INCDIR) $^ -o $(BINDIR)/aes $(OPENSSLFLAGS)
 
 # Regra para limpar os arquivos gerados (compilados)
 clean:
