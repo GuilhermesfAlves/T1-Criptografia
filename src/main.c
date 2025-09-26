@@ -2,19 +2,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "manager.h"
-#include "crypt.h"
+#include "../include/manager.h"
+#include "../include/crypt.h"
 
-int main(int argv, char* argc[]) {
+int main() {
     srand(time(NULL));
 
-    // Entrada invalida
-    if (argv != 3) {
-        print_help(argc[0]);
-        exit(1);
-    }
+    char *textoOriginal = read_stdin_to_string();
 
-    char textoOriginal[] = "criptografia eh massa, muito massa mesmo, acredite!";
+    // Entrada invalida
+    // if (argv != 3) {
+    //     print_help(argc[0]);
+    //     exit(1);
+    // }
+
     char *chaveCriptografia = generate_random_key();
 
     if (!is_key_valid(chaveCriptografia)) {
@@ -40,6 +41,6 @@ int main(int argv, char* argc[]) {
     free(textoCriptografado);
     free(textoDescriptografado);
     free(chaveCriptografia);
-
+    free(textoOriginal);
     return 0;
 }

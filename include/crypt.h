@@ -1,11 +1,11 @@
+#ifndef PROJECT_CRYPT_H
+#define PROJECT_CRYPT_H
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
-
-#ifndef CRYPT_H
-#define CRYPT_H
+#include <limits.h>
 
 #define MIN_CHAR        32
 #define MAX_CHAR        126
@@ -26,4 +26,4 @@ bool is_key_valid(char* key);       // Verifica validade da chave
 char* cipher    (char* originalText, char* key);    // Retorno: string cifrada
 char* decipher  (char* cryptedText,  char* key);    // Retorno: string decifrada
 
-#endif // CRYPT_H
+#endif // PROJECT_CRYPT_H
