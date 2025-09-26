@@ -8,39 +8,45 @@
 int main() {
     srand(time(NULL));
 
-    char *textoOriginal = read_stdin_to_string();
+    char *plainText = read_stdin_to_string();
 
+    if (!plainText){
+        perror("erro não foi possível alocar a string\n");
+        return 1;
+    }
+
+    // Usar argv para decidir se usa encrypt ou decrypt
     // Entrada invalida
     // if (argv != 3) {
     //     print_help(argc[0]);
     //     exit(1);
     // }
 
-    char *chaveCriptografia = generate_random_key();
+    char *key = generate_random_key();
 
-    if (!is_key_valid(chaveCriptografia)) {
-        if (chaveCriptografia)
-            free(chaveCriptografia);
+    if (!is_key_valid(key)) {
+        if (key)
+            free(key);
 
         printf("ERRO: Chave invalida\n");
 
         exit(1);
     }
 
-    char *textoCriptografado = cipher(textoOriginal, chaveCriptografia);
-    char *textoDescriptografado = decipher(textoCriptografado, chaveCriptografia);
+    char *encryptedText = encrypt(plainText, strlen(plainText), key);
+    char *decryptedText = decrypt(encryptedText, strlen(encryptedText), key);
 
-    printf("Chave:\t\t\t%s\n", chaveCriptografia);
-    printf("Original:\t\t%s\n", textoOriginal);
-    printf("Criptografado:\t\t%s\n", textoCriptografado);
-    printf("Descriptografado:\t%s\n", textoDescriptografado);
+    printf("Chave:\t\t\t%s\n", key);
+    printf("Original:\t\t%s\n", plainText);
+    printf("Criptografado:\t\t%s\n", encryptedText);
+    printf("Descriptografado:\t%s\n", decryptedText);
 
-    // TODO: Leitura de arquivos + expandir strings até MAX_CIPHER_LEN
-    // Expandir strings até MAX_CIPHER_LEN, ou seja se uma string lida tem 23 caracteres expandir ate 25 (se max == 25)
+    // TODO: Leitura de arquivos + expandir strings até MAX_CRYPT_LEN
+    // Expandir strings até MAX_CRYPT_LEN, ou seja se uma string lida tem 23 caracteres expandir ate 25 (se max == 25)
 
-    free(textoCriptografado);
-    free(textoDescriptografado);
-    free(chaveCriptografia);
-    free(textoOriginal);
+    free(encryptedText);
+    free(decryptedText);
+    free(plainText);
+    free(key);
     return 0;
 }
