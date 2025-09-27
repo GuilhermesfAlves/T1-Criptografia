@@ -17,6 +17,9 @@ obj/
 *.log
 *.dump
 
+# Diretórios de depuração
+out/
+
 # Arquivos específicos de editores e IDEs
 .vscode/
 .idea/

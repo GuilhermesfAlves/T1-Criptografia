@@ -1,52 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-#include "../include/manager.h"
-#include "../include/crypt.h"
+#include "include/manager.h"
+#include "include/crypt.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     srand(time(NULL));
 
-    char *plainText = read_stdin_to_string();
-
-    if (!plainText){
-        perror("erro não foi possível alocar a string\n");
+    if (argc < 2) {
+        print_help(argv[0]);
         return 1;
     }
 
-    // Usar argv para decidir se usa encrypt ou decrypt
-    // Entrada invalida
-    // if (argv != 3) {
-    //     print_help(argc[0]);
-    //     exit(1);
-    // }
-
-    char *key = generate_random_key();
-
-    if (!is_key_valid(key)) {
-        if (key)
-            free(key);
-
-        printf("ERRO: Chave invalida\n");
-
-        exit(1);
+    // === Geração de chave ===
+    if (strcmp(argv[1], "key") == 0) {
+        unsigned char *key = generate_random_key();
+        if (!key) {
+            fprintf(stderr, "Erro ao gerar chave.\n");
+            return 1;
+        }
+        printf("%s", key);
+        free(key);
+        return 0;
     }
 
-    char *encryptedText = encrypt(plainText, strlen(plainText), key);
-    char *decryptedText = decrypt(encryptedText, strlen(encryptedText), key);
+    // === Modo encrypt / decrypt ===
+    if (argc != 3) {
+        print_help(argv[0]);
+        return 1;
+    }
 
-    printf("Chave:\t\t\t%s\n", key);
-    printf("Original:\t\t%s\n", plainText);
-    printf("Criptografado:\t\t%s\n", encryptedText);
-    printf("Descriptografado:\t%s\n", decryptedText);
+    const char *mode = argv[1];
+    const char *keyfile = argv[2];
 
-    // TODO: Leitura de arquivos + expandir strings até MAX_CRYPT_LEN
-    // Expandir strings até MAX_CRYPT_LEN, ou seja se uma string lida tem 23 caracteres expandir ate 25 (se max == 25)
+    unsigned char *key = read_file_to_string(keyfile);
+    if (!key) {
+        return 1;
+    }
 
-    free(encryptedText);
-    free(decryptedText);
-    free(plainText);
+    if (!is_key_valid(key)) {
+        fprintf(stderr, "Chave inválida.\n");
+        free(key);
+        return 1;
+    }
+
+    size_t in_len;
+    unsigned char *inputText = read_stdin_to_string(&in_len);
+    if (!inputText) {
+        fprintf(stderr, "Erro ao ler entrada padrão.\n");
+        free(key);
+        return 1;
+    }
+
+    unsigned char *outputText = NULL;
+
+    if (strcmp(mode, "encrypt") == 0) {
+        outputText = encrypt(inputText, in_len, key);
+    } else if (strcmp(mode, "decrypt") == 0) {
+        outputText = decrypt(inputText, in_len, key);
+    } else {
+        print_help(argv[0]);
+        free(inputText);
+        free(key);
+        return 1;
+    }
+
+    if (!outputText) {
+        fprintf(stderr, "Erro na operação de %s.\n", mode);
+        free(inputText);
+        free(key);
+        return 1;
+    }
+
+    printf("%s", outputText);
+
+    free(outputText);
+    free(inputText);
     free(key);
+
     return 0;
 }

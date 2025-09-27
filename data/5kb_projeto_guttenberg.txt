@@ -128,3 +128,4 @@ bytes.  For the rest of the computer world, 1MB is 1,046,576 bytes.
 We mention this because people might read their DVD disc package and
 expect it to hold 4.7GB, but be surprised to find it can only hold
 about 4.37GB as the rest of the world measures space.
+

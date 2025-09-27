@@ -1,22 +1,22 @@
-#include "../include/crypt.h"
+#include "include/crypt.h"
 
 // Headers de ordenacao
 int compare_pairs(const void* a, const void* b);
-unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned int end);
+unsigned int* columns_sequence_by_key (unsigned char* key, unsigned int start, unsigned int end);
 
 // Headers de formatacao de strings
-char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration);
+unsigned char* xor_strings (unsigned char *a, unsigned char *b, unsigned int size, unsigned int iteration);
 
 // Cifra de Substituição
-char* substitution_encrypt(char* input, char* key, unsigned int size);
-char* substitution_decrypt(char* input, char* key, unsigned int size);
+unsigned char* substitution_encrypt(unsigned char* input, unsigned char* key, unsigned int size);
+unsigned char* substitution_decrypt(unsigned char* input, unsigned char* key, unsigned int size);
 
 // Cifra de transposicao
-char* transposition_encrypt (char* cryptedText, char* originalText, char* key, unsigned int len, unsigned int iteration);
-char* transposition_decrypt (char* decryptedText, char* originalText, char* key, unsigned int len, unsigned int iteration);
+unsigned char* transposition_encrypt (unsigned char* cryptedText, unsigned char* originalText, unsigned char* key, unsigned int len, unsigned int iteration);
+unsigned char* transposition_decrypt (unsigned char* decryptedText, unsigned char* originalText, unsigned char* key, unsigned int len, unsigned int iteration);
 
-char* generate_random_key () {
-    char* newKey = malloc((KEY_LEN + 1) * sizeof(char));
+unsigned char* generate_random_key () {
+    unsigned char* newKey = malloc((KEY_LEN + 1) * sizeof(unsigned char));
 
     if (!newKey) {
         printf("ERRO: não foi possível alocar memória para a NOVA CHAVE");
@@ -32,11 +32,11 @@ char* generate_random_key () {
 
 // FIXME ainda há problema com '\n' e '\t', entre outros.
 // Os acentos ficam corretos, por enquanto
-bool is_printable_char(char i) {
+bool is_printable_char(unsigned char i) {
     return (MIN_CHAR <= i && i <= MAX_CHAR);
 }
 
-bool is_key_valid (char* key) {
+bool is_key_valid (unsigned char* key) {
     for (unsigned int i = 0; i < KEY_LEN; i++)
         if (!is_printable_char(key[i]))
             return false;
@@ -48,7 +48,7 @@ int compare_pairs(const void* a, const void* b) {
     KeyPair* pairA = (KeyPair*)a;
     KeyPair* pairB = (KeyPair*)b;
 
-    // ordena com base no char
+    // ordena com base no unsigned char
     if (pairA -> character < pairB -> character) return -1;
     if (pairA -> character > pairB -> character) return 1;
 
@@ -59,7 +59,7 @@ int compare_pairs(const void* a, const void* b) {
     return 0;
 }
 
-unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned int end) {
+unsigned int* columns_sequence_by_key (unsigned char* key, unsigned int start, unsigned int end) {
     if (key == NULL || start > end) {
         return NULL;
     }
@@ -91,9 +91,9 @@ unsigned int* columns_sequence_by_key (char* key, unsigned int start, unsigned i
     return result_indices;
 }
 
-char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration) {
+unsigned char* xor_strings (unsigned char *a, unsigned char *b, unsigned int size, unsigned int iteration) {
     for (unsigned int i = 0; i < size; i++){
-        const char x = a[i] ^ b[((i + (iteration * BLOCK_LEN)) % KEY_LEN)];
+        const unsigned char x = a[i] ^ b[((i + (iteration * BLOCK_LEN)) % KEY_LEN)];
         if (is_printable_char(x))
             a[i] = x;
         // caso não seja caracter printável mantém
@@ -102,7 +102,7 @@ char* xor_strings (char *a, char *b, unsigned int size, unsigned int iteration) 
     return a;
 }
 
-char* transposition_encrypt (char* cryptedText, char* originalText, char* key, unsigned int len, unsigned int iteration) {
+unsigned char* transposition_encrypt (unsigned char* cryptedText, unsigned char* originalText, unsigned char* key, unsigned int len, unsigned int iteration) {
     unsigned int transpositionIndex,
                  index = 0,
                  *columnSequence = columns_sequence_by_key(key, BLOCK_LEN * iteration, (BLOCK_LEN * (iteration + 1)));
@@ -129,7 +129,7 @@ char* transposition_encrypt (char* cryptedText, char* originalText, char* key, u
     return cryptedText;
 }
 
-char* transposition_decrypt (char* decryptedText, char* originalText, char* key, unsigned int len, unsigned int iteration) {
+unsigned char* transposition_decrypt (unsigned char* decryptedText, unsigned char* originalText, unsigned char* key, unsigned int len, unsigned int iteration) {
     unsigned int transpositionIndex,
                  index = 0,
                  *columnSequence = columns_sequence_by_key(key, BLOCK_LEN * iteration, (BLOCK_LEN * (iteration + 1)));
@@ -156,14 +156,14 @@ char* transposition_decrypt (char* decryptedText, char* originalText, char* key,
     return decryptedText;
 }
 
-char* substitution_encrypt(char* input, char* key, unsigned int size) {
+unsigned char* substitution_encrypt(unsigned char* input, unsigned char* key, unsigned int size) {
     unsigned int shift = 0;
     // Gera deslocamento a partir da chave
     for (unsigned int i = 0; i < KEY_LEN; i++)
         shift = (shift * 31 + key[i]) % RANGE_CHAR;
 
     for (unsigned int i = 0; i < size; i++) {
-        const char c = input[i];
+        const unsigned char c = input[i];
 
         if (is_printable_char(c)) {
             input[i] = MIN_CHAR + ((c - MIN_CHAR - shift + RANGE_CHAR) % RANGE_CHAR);
@@ -174,14 +174,14 @@ char* substitution_encrypt(char* input, char* key, unsigned int size) {
 }
 
 // Cifra de César
-char* substitution_decrypt(char* input, char* key, unsigned int size) {
+unsigned char* substitution_decrypt(unsigned char* input, unsigned char* key, unsigned int size) {
     unsigned int shift = 0;
     // Gera deslocamento a partir da chave
     for (unsigned int i = 0; i < KEY_LEN; i++)
         shift = (shift * 31 + key[i]) % RANGE_CHAR;
 
     for (unsigned int i = 0; i < size; i++) {
-        const char c = input[i];
+        const unsigned char c = input[i];
 
         if (is_printable_char(c)) {
             input[i] = MIN_CHAR + ((c - MIN_CHAR + shift) % RANGE_CHAR);
@@ -191,10 +191,12 @@ char* substitution_decrypt(char* input, char* key, unsigned int size) {
     return input;
 }
 
-char* encrypt (char* originalText, int len, char* key) {
-    char *input_buffer = malloc((len + 1) * sizeof(char)),
-         *output_buffer = malloc((len + 1) * sizeof(char)),
+unsigned char* encrypt (unsigned char* originalText, int len, unsigned char* key) {
+    unsigned char *input_buffer = malloc((len + 1) * sizeof(unsigned char)),
+         *output_buffer = malloc((len + 1) * sizeof(unsigned char)),
          *temp;
+
+    // printf("LEN ENCRYPT %d\n", len);
 
     if (!output_buffer || !input_buffer) {
         printf("ERRO: não foi possível alocar memória para o texto criptografado");
@@ -209,7 +211,7 @@ char* encrypt (char* originalText, int len, char* key) {
     for (unsigned int i = 0; i < N_REP_CRYPT; i++) {
         transposition_encrypt(output_buffer, input_buffer, key, len, i);
         substitution_encrypt(output_buffer, key, len);
-        xor_strings(output_buffer, key, len, i);
+        // xor_strings(output_buffer, key, len, i);
 
         temp = input_buffer;
         input_buffer = output_buffer;
@@ -223,10 +225,10 @@ char* encrypt (char* originalText, int len, char* key) {
     return output_buffer;
 }
 
-char* decrypt(char* cryptedText, int len, char* key) {
-    char* input_buffer = malloc((len + 1) * sizeof(char));
-    char* output_buffer = malloc((len + 1) * sizeof(char));
-    char* temp;
+unsigned char* decrypt(unsigned char* cryptedText, int len, unsigned char* key) {
+    unsigned char* input_buffer = malloc((len + 1) * sizeof(unsigned char));
+    unsigned char* output_buffer = malloc((len + 1) * sizeof(unsigned char));
+    unsigned char* temp;
 
     if (!output_buffer || !input_buffer) {
         printf("ERRO: não foi possível alocar memória para o texto criptografado");
@@ -235,10 +237,12 @@ char* decrypt(char* cryptedText, int len, char* key) {
         return NULL;
     }
 
+    // printf("LEN DECRYPT %d\n", len);
+
     memcpy(input_buffer, cryptedText, len + 1);
 
     for (unsigned int i = N_REP_CRYPT; i > 0; i--) {
-        xor_strings (input_buffer, key, len, i - 1);
+        // xor_strings (input_buffer, key, len, i - 1);
         substitution_decrypt(input_buffer, key, len);
         transposition_decrypt(output_buffer, input_buffer, key, len, i - 1);
 
