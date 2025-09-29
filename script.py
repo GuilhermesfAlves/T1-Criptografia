@@ -84,8 +84,6 @@ def benchmark(csv_mode=False):
 
     results = []
 
-    print(f"Rodando benchmark em {len(files)} arquivo(s)...\n")
-
     for algo_name, algo_bin in algorithms:
         print(f"=== ALGORITMO: {algo_name.upper()} ===")
         
@@ -186,15 +184,44 @@ def limpar_csv():
         padrao = os.path.join(pasta, "*.csv")
         for arquivo in glob.glob(padrao):
             try:
-                os.remove(arquivo)
-                print(f"Removido: {arquivo}")
+                with open(arquivo, "w", encoding="utf-8") as f:
+                    pass 
             except OSError as e:
                 print(f"Erro ao remover {arquivo}: {e}")
+
+def pular_linha_csv():
+    pastas = ["out/crypt", "out/aes"]
+    for pasta in pastas:
+        padrao = os.path.join(pasta, "*.csv")
+        for arquivo in glob.glob(padrao):
+            with open(arquivo, "a", encoding="utf-8") as f:
+                f.write("\n")
+
+def log_tamanhos_csv():
+    pastas = ["out/crypt", "out/aes"]
+    for pasta in pastas:
+        arquivos = list(Path(pasta).glob("*.csv"))
+        if not arquivos:
+            continue
+
+        data_files = sorted(Path("data").glob("*"))
+
+        nomes_str = ','.join([str(f.name) for f in data_files])
+        tamanhos_str = ','.join([str(f.stat().st_size) for f in data_files])
+
+        for f in arquivos:
+            try:
+                with open(f, "a", encoding="utf-8") as file:
+                    file.write(f"{nomes_str}\n{tamanhos_str}\n")
+            except OSError as e:
+                print(f"Erro ao escrever em {f}: {e}")
 
 if __name__ == "__main__":
     limpar_csv()
     parser = argparse.ArgumentParser(description="Benchmark de criptografia")
     parser.add_argument("--csv", action="store_true", help="Exporta resultados para out/benchmark.csv")
     args = parser.parse_args()
-
-    benchmark(csv_mode=args.csv)
+    log_tamanhos_csv()
+    for i in range(20):        
+        benchmark(csv_mode=args.csv)
+        pular_linha_csv()
