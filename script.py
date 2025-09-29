@@ -4,6 +4,8 @@ import time
 import difflib
 import csv
 import argparse
+import os
+import glob
 from pathlib import Path
 
 # Caminhos para os binários
@@ -178,7 +180,19 @@ def benchmark(csv_mode=False):
 
     print("Benchmark concluído.")
 
+def limpar_csv():
+    pastas = ["out/crypt", "out/aes"]
+    for pasta in pastas:
+        padrao = os.path.join(pasta, "*.csv")
+        for arquivo in glob.glob(padrao):
+            try:
+                os.remove(arquivo)
+                print(f"Removido: {arquivo}")
+            except OSError as e:
+                print(f"Erro ao remover {arquivo}: {e}")
+
 if __name__ == "__main__":
+    limpar_csv()
     parser = argparse.ArgumentParser(description="Benchmark de criptografia")
     parser.add_argument("--csv", action="store_true", help="Exporta resultados para out/benchmark.csv")
     args = parser.parse_args()

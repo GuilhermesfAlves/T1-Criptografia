@@ -63,3 +63,9 @@ unsigned char* read_file_to_string(const char *filename) {
     fclose(f);
     return buffer;
 }
+
+long long diff_ns(struct timespec start, struct timespec end) {
+    long long s = (long long)(end.tv_sec - start.tv_sec) * 1000000000LL;
+    long long ns = end.tv_nsec - start.tv_nsec;
+    return s + ns;
+}

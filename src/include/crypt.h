@@ -1,5 +1,6 @@
 #ifndef PROJECT_CRYPT_H
 #define PROJECT_CRYPT_H
+#include "manager.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

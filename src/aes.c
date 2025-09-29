@@ -1,10 +1,10 @@
+#include "include/manager.h"
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "include/manager.h"
 
 #define AES_KEY_SIZE 32
 #define AES_IV_SIZE  16
@@ -44,6 +44,11 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
     if(!(ctx = EVP_CIPHER_CTX_new()))
         handleErrors();
 
+    FILE* timeLog = fopen("out/aes/encryptTimeLog.csv","a");
+        struct timespec inicio, fim;
+
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
+
     if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
         handleErrors();
 
@@ -54,6 +59,11 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
     if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
         handleErrors();
     ciphertext_len += len;
+
+    clock_gettime(CLOCK_MONOTONIC, &fim);
+    long long duracao_ns = diff_ns(inicio, fim);
+    fprintf(timeLog, "%lld,", duracao_ns);
+    fclose(timeLog);
 
     EVP_CIPHER_CTX_free(ctx);
 
@@ -69,6 +79,11 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
     if(!(ctx = EVP_CIPHER_CTX_new()))
         handleErrors();
 
+    FILE* timeLog = fopen("out/aes/decryptTimeLog.csv","a");
+    struct timespec inicio, fim;
+
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
+
     if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
         handleErrors();
 
@@ -79,6 +94,11 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
     if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
         handleErrors();
     plaintext_len += len;
+
+    clock_gettime(CLOCK_MONOTONIC, &fim);
+    long long duracao_ns = diff_ns(inicio, fim);
+    fprintf(timeLog, "%lld,", duracao_ns);
+    fclose(timeLog);
 
     EVP_CIPHER_CTX_free(ctx);
 

@@ -196,7 +196,7 @@ unsigned char* encrypt (unsigned char* originalText, int len, unsigned char* key
          *output_buffer = malloc((len + 1) * sizeof(unsigned char)),
          *temp;
 
-    // printf("LEN ENCRYPT %d\n", len);
+    FILE* timeLog = fopen("out/crypt/encryptTimeLog.csv","a");
 
     if (!output_buffer || !input_buffer) {
         printf("ERRO: não foi possível alocar memória para o texto criptografado");
@@ -206,7 +206,9 @@ unsigned char* encrypt (unsigned char* originalText, int len, unsigned char* key
     }
 
     memcpy(input_buffer, originalText, len + 1);
+    struct timespec inicio, fim;
 
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
     // Repeticoes de transposicao com cada chave
     for (unsigned int i = 0; i < N_REP_CRYPT; i++) {
         transposition_encrypt(output_buffer, input_buffer, key, len, i);
@@ -217,6 +219,10 @@ unsigned char* encrypt (unsigned char* originalText, int len, unsigned char* key
         input_buffer = output_buffer;
         output_buffer = temp;
     }
+    clock_gettime(CLOCK_MONOTONIC, &fim);
+    long long duracao_ns = diff_ns(inicio, fim);
+    fprintf(timeLog, "%lld,", duracao_ns);
+    fclose(timeLog);
 
     memcpy(output_buffer, input_buffer, len);
     output_buffer[len] = '\0';
@@ -239,8 +245,12 @@ unsigned char* decrypt(unsigned char* cryptedText, int len, unsigned char* key) 
 
     // printf("LEN DECRYPT %d\n", len);
 
+    FILE* timeLog = fopen("out/crypt/decryptTimeLog.csv","a");
     memcpy(input_buffer, cryptedText, len + 1);
 
+    struct timespec inicio, fim;
+
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
     for (unsigned int i = N_REP_CRYPT; i > 0; i--) {
         // xor_strings (input_buffer, key, len, i - 1);
         substitution_decrypt(input_buffer, key, len);
@@ -250,6 +260,10 @@ unsigned char* decrypt(unsigned char* cryptedText, int len, unsigned char* key) 
         input_buffer = output_buffer;
         output_buffer = temp;
     }
+    clock_gettime(CLOCK_MONOTONIC, &fim);
+    long long duracao_ns = diff_ns(inicio, fim);
+    fprintf(timeLog, "%lld,", duracao_ns);
+    fclose(timeLog);
 
     memcpy(output_buffer, input_buffer, len);
     output_buffer[len] = '\0';
