@@ -213,7 +213,7 @@ unsigned char* encrypt (unsigned char* originalText, int len, unsigned char* key
     for (unsigned int i = 0; i < N_REP_CRYPT; i++) {
         transposition_encrypt(output_buffer, input_buffer, key, len, i);
         substitution_encrypt(output_buffer, key, len);
-        // xor_strings(output_buffer, key, len, i);
+        xor_strings(output_buffer, key, len, i);
 
         temp = input_buffer;
         input_buffer = output_buffer;
@@ -252,7 +252,7 @@ unsigned char* decrypt(unsigned char* cryptedText, int len, unsigned char* key) 
 
     clock_gettime(CLOCK_MONOTONIC, &inicio);
     for (unsigned int i = N_REP_CRYPT; i > 0; i--) {
-        // xor_strings (input_buffer, key, len, i - 1);
+        xor_strings (input_buffer, key, len, i - 1);
         substitution_decrypt(input_buffer, key, len);
         transposition_decrypt(output_buffer, input_buffer, key, len, i - 1);
 
