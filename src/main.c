@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("%s", outputText);
+    fwrite(outputText, sizeof(unsigned char), in_len, stdout);
 
     free(outputText);
     free(inputText);

@@ -67,8 +67,6 @@ def show_diff(original_bytes, decrypted_bytes, filename):
                 print(f"    \033[31m{line}\033[0m")  # vermelho
             else:
                 print(f"    {line}")
-    else:
-        print("  (sem diff visível — diferença binária talvez)")
 
 def benchmark(csv_mode=False):
     # Lista de algoritmos para testar

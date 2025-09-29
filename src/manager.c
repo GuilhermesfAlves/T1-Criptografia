@@ -3,13 +3,14 @@
 void print_help(const char *progname) {
     fprintf(stderr,
         "Uso:\n"
-        "  %s key                         Gera uma chave aleatória e imprime na stdout\n"
-        "  %s encrypt <keyfile> < input    Criptografa texto lido da stdin\n"
-        "  %s decrypt <keyfile> < input    Descriptografa texto lido da stdin\n",
+        "  %s key                          Gera uma chave aleatória e imprime na stdout\n"
+        "  %s encrypt <keyfile> < input    Criptografa texto lido do stdin\n"
+        "  %s decrypt <keyfile> < input    Descriptografa texto lido do stdin\n",
         progname, progname, progname
     );
 }
 
+// usado para receber a entrada do buffer que é o texto para criptografar/descriptografar
 unsigned char *read_stdin_to_string(size_t *out_len) {
     size_t capacity = 1024;
     size_t length = 0;
@@ -33,7 +34,7 @@ unsigned char *read_stdin_to_string(size_t *out_len) {
     return buffer;
 }
 
-
+// usado somente para pegar a chave quando ela não é estática
 unsigned char* read_file_to_string(const char *filename) {
     FILE *f = fopen(filename, "rb");
     if (!f) {
