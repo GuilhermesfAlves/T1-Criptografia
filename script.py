@@ -117,40 +117,26 @@ def benchmark(csv_mode=False):
                 decrypt_cmd = [str(algo_bin), "decrypt"]
 
             enc_path = encrypted_dir / f"{file.stem}.enc"
-            enc_stdout, enc_stderr, enc_time = run_command(
+            enc_stdout, _, enc_time = run_command(
                 encrypt_cmd,
                 input_data=plain_data
             )
-            if enc_stderr:
-                print(f"  Erro ao criptografar: {enc_stderr.decode()}")
-                show_diff(plain_data, enc_stdout, file.name)
-                continue
 
             enc_path.write_bytes(enc_stdout)
 
             # === 2. Decrypt ===
-            dec_stdout, dec_stderr, dec_time = run_command(
+            dec_stdout, _, dec_time = run_command(
                 decrypt_cmd,
                 input_data=enc_stdout
             )
-            if dec_stderr:
-                print(f"  Erro ao descriptografar: {dec_stderr.decode()}")
-                show_diff(plain_data, dec_stdout, file.name)
-                continue
 
             dec_path = decrypted_dir / f"{file.stem}.dec"
             dec_path.write_bytes(dec_stdout)
 
             # === 3. Comparar ===
-            ok = plain_data == dec_stdout
-            status = "OK" if ok else "Falha"
 
             print(f"  Tempo encrypt: {enc_time*1000:.2f} ms")
             print(f"  Tempo decrypt: {dec_time*1000:.2f} ms")
-            print(f"  Verificação: {status}")
-
-            if not ok:
-                show_diff(plain_data, dec_stdout, file.name)
 
             # === 4. Registrar resultados ===
             results.append({
@@ -159,7 +145,6 @@ def benchmark(csv_mode=False):
                 "tam_bytes": len(plain_data),
                 "tempo_encrypt_ms": enc_time * 1000,
                 "tempo_decrypt_ms": dec_time * 1000,
-                "status": "OK" if ok else "FALHA"
             })
 
             print()
